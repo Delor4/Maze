@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head lang="pl">
+    <meta charset="UTF-8">
+    <title>Labirynt</title>
+    <style>
+        canvas {
+            border: 1px dashed black;
+        }
+    </style>
+    <script type="text/javascript" src="Maze.js"></script>
+</head>
+<body>
+    Skala: <input type="range" id="skala" min="1" max="5" value="1" step="1" ><br>
+    Wielkość nowego labiryntu: x:<input type="range" id="sizex" min="10" max="40" value="10" step="5" > y:<input type="range" id="sizey" min="10" max="40" value="10" step="5" > <span id="sizeout"></span> <button onclick="NewLab()">Losuj</button><br>
+    Pozostałe podpowiedzi: <span id="hints"></span><br>
+    Spędzony czas: <span id="showtime"></span><br>
+    <canvas id="drawingCanvas" width="10" height="10"></canvas><br>
+    <div id="uwaga"></div>
+    klawisze strzałek - poruszanie kropkiem<br>
+    space - podpowiedź<br>
+</body>
+</html>
