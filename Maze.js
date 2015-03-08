@@ -43,10 +43,10 @@ function random(i){
 
         this.setType=function(t){
             this.Type=t;
-        }
+        };
         this.getType=function(){
             return this.Type;
-        }
+        };
     }
     function Maze(x,y,m){
         this.countX=x;
@@ -76,10 +76,10 @@ function random(i){
         }
         this.setGraphMultiply=function(g){
             this.graphMultiply=g;
-        }
+        };
         this.getGraphMultiply= function(){
             return this.graphMultiply;
-        }
+        };
         this.Repaint=function(context){
         //odmalowuję labirynt
             var grd = context.createRadialGradient(0, 0, dl(0,0,this.getGraphSizeX(),this.getGraphSizeY())/10, 0,
@@ -179,23 +179,23 @@ function random(i){
                     ){
                         var x0=(x1+x2)/2;
                         var y0=(y1+y2)/2;
-                        var xr=(x2-x1)/3;
-                        var yr=(y2-y1)/3;
+                        var xr=(x2-x1)/4;
+                        var yr=(y2-y1)/2;
                         context.save();
                         context.globalAlpha=0.5;
                         context.beginPath();
-                        context.moveTo(x1+xr,y1);
-                        context.lineTo(x2-xr,y1);
-                        context.arc(x2-xr,y1+yr,xr,-Math.PI/2,0,false);
-                        context.lineTo(x2,y2-yr);
-                        context.arc(x2-xr,y2-yr,xr,0,Math.PI/2,false);
-                        context.lineTo(x1+xr,y2);
-                        context.arc(x1+xr,y2-yr,xr,Math.PI/2,Math.PI,false);
-                        context.lineTo(x1,y1+yr);
-                        context.arc(x1+xr,y1+yr,xr,Math.PI,-Math.PI/2,false);
+                        grd = context.createRadialGradient(x0, y0, xr,
+                            x0, y0, yr);
+                        grd.addColorStop(0, "rgba(255,255,0,1)");
+                        //grd.addColorStop(0.5, "red");
+                        grd.addColorStop(1, "rgba(255,255,0,0)");
+                        context.moveTo(x1,y1);
+                        context.lineTo(x2,y1);
+                        context.lineTo(x2,y2);
+                        context.lineTo(x1,y2);
                         context.closePath();
                         //context.stroke();
-                        context.fillStyle="yellow";
+                        context.fillStyle=grd;
                         context.fill();
 
                         context.restore();
@@ -411,15 +411,12 @@ function random(i){
 
         }
         this.getGraphSizeX=function(){
-            var x=((this.roomSizeX*this.countX)+(this.wallWidth*(this.countX+1)))*this.getGraphMultiply();
-            return x;
+            return((this.roomSizeX*this.countX)+(this.wallWidth*(this.countX+1)))*this.getGraphMultiply();
 
-        }
+        };
         this.getGraphSizeY=function(){
-            var y=((this.roomSizeY*this.countY)+(this.wallWidth*(this.countY+1)))*this.getGraphMultiply();
-            return y;
-
-        }
+            return((this.roomSizeY*this.countY)+(this.wallWidth*(this.countY+1)))*this.getGraphMultiply();
+        };
 
 
         this.losuj=function(){//losowanie rozstawienia ścian
@@ -822,4 +819,4 @@ window.onload = function() {
 
     //lab.winner=true;
     setInterval(function(){ShowTime();},1000);
-}
+};
