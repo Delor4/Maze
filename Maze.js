@@ -154,7 +154,9 @@ function random(i){
 
                     }
                     //jedno pole podpowiedzi
+                   /*
                     if(this.hint && r.sciezka==2){
+
                         context.save();
                         context.globalAlpha=0.5;
                         context.beginPath();
@@ -169,15 +171,28 @@ function random(i){
 
                         context.restore();
                     }
+                    */
                     //cała ścieżka po wygraniu
-                    if(this.winner && r.sciezka==1){
+                    if(
+                        (this.winner && r.sciezka==1)||
+                        (this.hint && r.sciezka==2)
+                    ){
+                        var x0=(x1+x2)/2;
+                        var y0=(y1+y2)/2;
+                        var xr=(x2-x1)/3;
+                        var yr=(y2-y1)/3;
                         context.save();
                         context.globalAlpha=0.5;
                         context.beginPath();
-                        context.moveTo(x1,y1);
-                        context.lineTo(x2,y1);
-                        context.lineTo(x2,y2);
-                        context.lineTo(x1,y2);
+                        context.moveTo(x1+xr,y1);
+                        context.lineTo(x2-xr,y1);
+                        context.arc(x2-xr,y1+yr,xr,-Math.PI/2,0,false);
+                        context.lineTo(x2,y2-yr);
+                        context.arc(x2-xr,y2-yr,xr,0,Math.PI/2,false);
+                        context.lineTo(x1+xr,y2);
+                        context.arc(x1+xr,y2-yr,xr,Math.PI/2,Math.PI,false);
+                        context.lineTo(x1,y1+yr);
+                        context.arc(x1+xr,y1+yr,xr,Math.PI,-Math.PI/2,false);
                         context.closePath();
                         //context.stroke();
                         context.fillStyle="yellow";
