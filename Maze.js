@@ -2,6 +2,14 @@
  * Created by Delor on 2015-02-28.
  */
 
+//stałe
+const DIR = {
+  UP: 0,
+  RIGHT: 1,
+  DOWN: 2,
+  LEFT: 3
+}
+
 //używane zmienne
 var canvas, context;
 
@@ -66,7 +74,7 @@ function Maze(x, y, m) {
     this.dotee = {
         x: this.countX - 1,
         y: this.countY - 1,
-        look: 0
+        look: DIR.UP
     };
 
     this.hintCount = 5;
@@ -204,14 +212,14 @@ function Maze(x, y, m) {
 
                 if (i == this.dotee.x && j == this.dotee.y) {
 
-                    if (this.dotee.look == 0) {//góra
+                    if (this.dotee.look == DIR.UP) {
                         context.save();
                         context.translate((x1 + x2) / 2, (y1 + y2) / 2);
                         if (imgDotee.loaded)
                             context.drawImage(imgDotee, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
                         context.restore();
                     }
-                    if (this.dotee.look == 1) {//prawo
+                    if (this.dotee.look == DIR.RIGHT) {
                         context.save();
                         context.translate((x1 + x2) / 2, (y1 + y2) / 2);
                         context.rotate(Math.PI / 2);
@@ -220,7 +228,7 @@ function Maze(x, y, m) {
                         context.restore();
 
                     }
-                    if (this.dotee.look == 2) {//dół
+                    if (this.dotee.look == DIR.DOWN) {
                         context.save();
                         context.translate((x1 + x2) / 2, (y1 + y2) / 2);
                         context.rotate(Math.PI);
@@ -229,7 +237,7 @@ function Maze(x, y, m) {
                         context.restore();
 
                     }
-                    if (this.dotee.look == 3) {//lewo
+                    if (this.dotee.look == DIR.LEFT) {
                         context.save();
                         context.translate((x1 + x2) / 2, (y1 + y2) / 2);
                         context.rotate(-Math.PI / 2);
@@ -547,9 +555,9 @@ function Maze(x, y, m) {
         if (!this.winner) {
             if (this.get_wall_up(this.dotee.x, this.dotee.y).getType() == 0) {
                 this.hint = false;
-                this.get_room(this.dotee.x, this.dotee.y).blood[0] = true;
+                this.get_room(this.dotee.x, this.dotee.y).blood[DIR.UP] = true;
                 this.dotee.y -= 1;
-                this.dotee.look = 0;
+                this.dotee.look = DIR.UP;
                 this.checkWin();
             }
         }
@@ -558,9 +566,9 @@ function Maze(x, y, m) {
         if (!this.winner) {
             if (this.get_wall_down(this.dotee.x, this.dotee.y).getType() == 0) {
                 this.hint = false;
-                this.get_room(this.dotee.x, this.dotee.y).blood[2] = true;
+                this.get_room(this.dotee.x, this.dotee.y).blood[DIR.DOWN] = true;
                 this.dotee.y += 1;
-                this.dotee.look = 2;
+                this.dotee.look = DIR.DOWN;
                 this.checkWin();
             }
         }
@@ -569,9 +577,9 @@ function Maze(x, y, m) {
         if (!this.winner) {
             if (this.get_wall_left(this.dotee.x, this.dotee.y).getType() == 0) {
                 this.hint = false;
-                this.get_room(this.dotee.x, this.dotee.y).blood[3] = true;
+                this.get_room(this.dotee.x, this.dotee.y).blood[DIR.LEFT] = true;
                 this.dotee.x -= 1;
-                this.dotee.look = 3;
+                this.dotee.look = DIR.LEFT;
                 this.checkWin();
             }
         }
@@ -580,9 +588,9 @@ function Maze(x, y, m) {
         if (!this.winner) {
             if (this.get_wall_right(this.dotee.x, this.dotee.y).getType() == 0) {
                 this.hint = false;
-                this.get_room(this.dotee.x, this.dotee.y).blood[1] = true;
+                this.get_room(this.dotee.x, this.dotee.y).blood[DIR.RIGHT] = true;
                 this.dotee.x += 1;
-                this.dotee.look = 1;
+                this.dotee.look = DIR.RIGHT;
                 this.checkWin();
             }
         }
