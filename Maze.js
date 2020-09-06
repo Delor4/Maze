@@ -379,9 +379,10 @@ function Maze(x, y, m) {
         return ((this.roomSizeY * this.countY) + (this.wallWidth * (this.countY + 1))) * this.getGraphMultiply();
     };
 
+    this.place_walls = function () {//losowanie rozstawienia ścian
+        const max_walls = (this.countX * this.countY) - (this.countX + this.countY) + 1;
 
-    this.randomize = function () {//losowanie rozstawienia ścian
-        while (this.wallsCount < ((this.countX * this.countY) - (this.countX + this.countY) + 1)) {
+        while (this.wallsCount < max_walls) {
             for (var rx = 0; rx < this.countX; rx++) {
                 this.checkInsert(rx, this.countY - 1, random(4));
             }
@@ -657,7 +658,7 @@ function Maze(x, y, m) {
 
         }
     }
-    this.randomize();
+    this.place_walls();
     this.startTime = new Date();
 }
 
