@@ -96,235 +96,268 @@ function Maze(x, y, m) {
         return this.graphMultiply;
     };
     this.Repaint = function (context) {
-        //odmalowuję labirynt
         var grd = context.createRadialGradient(0, 0, distance(0, 0, this.getGraphSizeX(), this.getGraphSizeY()) / 10, 0,
-            0, distance(0, 0, this.getGraphSizeX(), this.getGraphSizeY()));
+                                               0, distance(0, 0, this.getGraphSizeX(), this.getGraphSizeY()));
         grd.addColorStop(0, "#c0c0c0");
-        //grd.addColorStop(0.5, "red");
         grd.addColorStop(1, "#000000");
 
-        context.beginPath();
-        context.moveTo(0, 0);
-        context.lineTo(this.getGraphSizeX(), 0);
-        context.lineTo(this.getGraphSizeX(), this.getGraphSizeY());
-        context.lineTo(0, this.getGraphSizeY());
-        context.closePath();
-        context.fillStyle = grd;
-        context.fill();
+        //draw maze
 
-        //komnaty
+        this.draw_background(context, grd);
+
+        //rooms
         for (var i = 0; i < this.countX; i++) {
             for (var j = 0; j < this.countY; j++) {
-                var r = this.rooms[i][j];
-                var x1 = ((i * (this.roomSizeX)) + ((i + 1) * (this.wallWidth))) * this.graphMultiply;
-                var y1 = ((j * (this.roomSizeY)) + ((j + 1) * (this.wallWidth))) * this.graphMultiply;
-                var x2 = x1 + (this.roomSizeX * this.graphMultiply);
-                var y2 = y1 + (this.roomSizeY * this.graphMultiply);
-                var x3 = x1 + ((this.roomSizeX - this.wallHeight) * this.graphMultiply / 2);
-                var y3 = y1 + ((this.roomSizeY - this.wallHeight) * this.graphMultiply / 2);
-                var x4 = x2 - ((this.roomSizeX - this.wallHeight) * this.graphMultiply / 2);
-                var y4 = y2 - ((this.roomSizeY - this.wallHeight) * this.graphMultiply / 2);
-                context.beginPath();
-                context.moveTo(x1, y1);
-                context.lineTo(x2, y1);
-                context.lineTo(x2, y2);
-                context.lineTo(x1, y2);
-                context.closePath();
-                //context.stroke();
-                context.fillStyle = "white";
-                context.fill();
+                const x1 = ((i * (this.roomSizeX)) + ((i + 1) * (this.wallWidth))) * this.graphMultiply;
+                const y1 = ((j * (this.roomSizeY)) + ((j + 1) * (this.wallWidth))) * this.graphMultiply;
+                const x2 = x1 + (this.roomSizeX * this.graphMultiply);
+                const y2 = y1 + (this.roomSizeY * this.graphMultiply);
 
-                //bloody path :)
-                r.blood.forEach(function (exist, index) {
-                    if(exist){
-                        context.save();
-                        context.translate((x1 + x2) / 2, (y1 + y2) / 2);
-                        context.rotate(ROTATION[index]);
-                        if (imgBlood.loaded)
-                            context.drawImage(imgBlood, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
-                        context.restore();
-                    }
-                });
-
-                //cała ścieżka po wygraniu
-                if (
-                    (this.winner && r.path == 1) ||
-                    (this.hint && r.path == 2)
-                ) {
-                    var x0 = (x1 + x2) / 2;
-                    var y0 = (y1 + y2) / 2;
-                    var xr = (x2 - x1) / 4;
-                    var yr = (y2 - y1) / 2;
-                    context.save();
-                    context.globalAlpha = 0.5;
-                    context.beginPath();
-                    grd = context.createRadialGradient(x0, y0, xr,
-                        x0, y0, yr);
-                    grd.addColorStop(0, "rgba(255,255,0,1)");
-                    //grd.addColorStop(0.5, "red");
-                    grd.addColorStop(1, "rgba(255,255,0,0)");
-                    context.moveTo(x1, y1);
-                    context.lineTo(x2, y1);
-                    context.lineTo(x2, y2);
-                    context.lineTo(x1, y2);
-                    context.closePath();
-                    //context.stroke();
-                    context.fillStyle = grd;
-                    context.fill();
-
-                    context.restore();
+                const d = {
+                    "room" : this.rooms[i][j],
+                    "x1" : x1,
+                    "y1" : y1,
+                    "x2" : x2,
+                    "y2" : y2,
+                    "x3" : x1 + ((this.roomSizeX - this.wallHeight) * this.graphMultiply / 2),
+                    "y3" : y1 + ((this.roomSizeY - this.wallHeight) * this.graphMultiply / 2),
+                    "x4" : x2 - ((this.roomSizeX - this.wallHeight) * this.graphMultiply / 2),
+                    "y4" : y2 - ((this.roomSizeY - this.wallHeight) * this.graphMultiply / 2)
                 }
-                context.strokeStyle = "gray";
-                context.lineWidth = this.graphMultiply;
-                context.beginPath();
-                context.moveTo(x3, y1);
-                context.lineTo(x1, y1);
-                context.lineTo(x1, y3);
 
-                context.moveTo(x4, y1);
-                context.lineTo(x2, y1);
-                context.lineTo(x2, y3);
+                //room
+                this.draw_room_background(context, d);
+                this.draw_room_outline(context, d);
 
-                context.moveTo(x4, y2);
-                context.lineTo(x2, y2);
-                context.lineTo(x2, y4);
+                //blood
+                this.draw_blood(context, d);
 
-                context.moveTo(x3, y2);
-                context.lineTo(x1, y2);
-                context.lineTo(x1, y4);
-                context.stroke();
+                //after win draw all hints
+                if (
+                    (this.winner && d.room.path == 1) ||
+                    (this.hint && d.room.path == 2)
+                ) {
+                    this.draw_hint(context, d, grd);
+                }
 
+                //main character
                 if (i == this.dotee.x && j == this.dotee.y) {
-                    context.save();
-                    context.translate((x1 + x2) / 2, (y1 + y2) / 2);
-                    context.rotate(ROTATION[this.dotee.look]);
-                    if (imgDotee.loaded)
-                        context.drawImage(imgDotee, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
-                    context.restore();
+                    this.draw_dotee(context, d);
                 }
             }
         }
-        //ściany x
+        //walls horizontal
         for (var i = 0; i <= this.countX; i++) {
             for (var j = 0; j < this.countY; j++) {
-                var w = this.walls.x[i][j];
-                var x1 = ((i * (this.roomSizeX + this.wallWidth))) * this.graphMultiply;
-                var y1 = ((j * (this.roomSizeY)) + ((j + 1) * (this.wallWidth))) * this.graphMultiply;
-                var x2 = x1 + (this.wallWidth * this.graphMultiply);
-                var y2 = y1 + (this.roomSizeY * this.graphMultiply);
-                var x3 = x1;
-                var y3 = y1 + ((this.roomSizeY - this.wallHeight) * this.graphMultiply / 2);
-                var x4 = x2;
-                var y4 = y2 - ((this.roomSizeY - this.wallHeight) * this.graphMultiply / 2);
 
-                if (w.getType() == 0) {
-                    context.beginPath();
-                    context.moveTo(x3, y3);
-                    context.lineTo(x4, y3);
-                    context.lineTo(x4, y4);
-                    context.lineTo(x3, y4);
-                    context.closePath();
-                    context.fillStyle = "white";
-                    context.fill();
+                const x1 = ((i * (this.roomSizeX + this.wallWidth))) * this.graphMultiply;
+                const y1 = ((j * (this.roomSizeY)) + ((j + 1) * (this.wallWidth))) * this.graphMultiply;
+                const x2 = x1 + (this.wallWidth * this.graphMultiply);
+                const y2 = y1 + (this.roomSizeY * this.graphMultiply);
 
-                    context.strokeStyle = "gray";
-                    context.lineWidth = this.graphMultiply;
-                    context.beginPath();
-                    context.moveTo(x3, y3);
-                    context.lineTo(x4, y3);
-                    context.moveTo(x3, y4);
-                    context.lineTo(x4, y4);
-                    context.stroke();
+                const d = {
+                    "wall" : this.walls.x[i][j],
+                    "x1" : x1,
+                    "x2" : x2,
+                    "y1" : y1,
+                    "y2" : y2,
+                    "x3" : x1,
+                    "y3" : y1 + ((this.roomSizeY - this.wallHeight) * this.graphMultiply / 2),
+                    "x4" : x2,
+                    "y4" : y2 - ((this.roomSizeY - this.wallHeight) * this.graphMultiply / 2)
+                };
 
+                if (d.wall.getType() == 0) {
+                    this.draw_wall_free_bkg(context, d);
+
+                    this.draw_wall_free_outline_horizontal(context, d);
                 }
                 else {
-                    context.strokeStyle = "gray";
-                    context.lineWidth = this.graphMultiply;
-                    context.beginPath();
-                    context.moveTo(x1, y3);
-                    context.lineTo(x1, y4);
-                    context.moveTo(x2, y3);
-                    context.lineTo(x2, y4);
-                    context.stroke();
+                    this.draw_wall_solid_horizontal(context, d);
                 }
             }
         }
+        //walls vertical
         for (var i = 0; i < this.countX; i++) {
             for (var j = 0; j <= this.countY; j++) {
-                var w = this.walls.y[i][j];
-                var x1 = ((i * (this.roomSizeX)) + ((i + 1) * (this.wallWidth))) * this.graphMultiply;
-                var y1 = ((j * (this.roomSizeY + this.wallWidth))) * this.graphMultiply;
-                var x2 = x1 + (this.roomSizeX * this.graphMultiply);
-                var y2 = y1 + (this.wallWidth * this.graphMultiply);
-                var x3 = x1 + ((this.roomSizeX - this.wallHeight) * this.graphMultiply / 2);
-                var y3 = y1;
-                var x4 = x2 - ((this.roomSizeX - this.wallHeight) * this.graphMultiply / 2);
-                var y4 = y2;
+                const x1 = ((i * (this.roomSizeX)) + ((i + 1) * (this.wallWidth))) * this.graphMultiply;
+                const y1 = ((j * (this.roomSizeY + this.wallWidth))) * this.graphMultiply;
+                const x2 = x1 + (this.roomSizeX * this.graphMultiply);
+                const y2 = y1 + (this.wallWidth * this.graphMultiply);
 
-                if (w.getType() == 0) {
-                    context.beginPath();
-                    context.moveTo(x3, y3);
-                    context.lineTo(x4, y3);
-                    context.lineTo(x4, y4);
-                    context.lineTo(x3, y4);
-                    context.closePath();
-                    context.fillStyle = "white";
-                    context.fill();
+                const d = {
+                    "wall" : this.walls.y[i][j],
+                    "x1" : x1,
+                    "x2" : x2,
+                    "y1" : y1,
+                    "y2" : y2,
+                    "x3" : x1 + ((this.roomSizeX - this.wallHeight) * this.graphMultiply / 2),
+                    "y3" : y1,
+                    "x4" : x2 - ((this.roomSizeX - this.wallHeight) * this.graphMultiply / 2),
+                    "y4" : y2
+                };
 
-                    context.strokeStyle = "gray";
-                    context.lineWidth = this.graphMultiply;
-                    context.beginPath();
-                    context.moveTo(x3, y3);
-                    context.lineTo(x3, y4);
-                    context.moveTo(x4, y3);
-                    context.lineTo(x4, y4);
-                    context.stroke();
-
+                if (d.wall.getType() == 0) {
+                    this.draw_wall_free_bkg(context, d);
+                    this.draw_wall_free_outline_vertical(context, d);
                 }
                 else {
-                    context.strokeStyle = "gray";
-                    context.lineWidth = this.graphMultiply;
-                    context.beginPath();
-                    context.moveTo(x3, y3);
-                    context.lineTo(x4, y3);
-                    context.moveTo(x3, y4);
-                    context.lineTo(x4, y4);
-                    context.stroke();
+                    this.draw_wall_solid_vertical(context, d);
                 }
             }
         }
+
         if (this.winner) {
-            //tu jakiś ekran z gratulacjami
-            context.save();
-            context.globalAlpha = 0.5;
-            context.beginPath();
-            context.moveTo(0, 0);
-            context.lineTo(this.getGraphSizeX(), 0);
-            context.lineTo(this.getGraphSizeX(), this.getGraphSizeY());
-            context.lineTo(0, this.getGraphSizeY());
-            context.closePath();
-            //context.stroke();
-            context.fillStyle = "#c0c0c0";
-            context.fill();
-
-            context.restore();
-
-            context.textAlign = "center";
-            context.fillStyle = "#ff0000";
-            context.strokeStyle = "#800000";
-
-            context.font = "" + (30 * this.graphMultiply) + "pt Calibri";
-            this.Text(context, "Gratulacje!", this.getGraphSizeX() / 2, this.getGraphSizeY() / 5);
-
-            context.font = "" + (15 * this.graphMultiply) + "pt Calibri";
-            this.Text(context, "Labirynt " + this.countX + "x" + this.countY + " pól", this.getGraphSizeX() / 2, 2 * this.getGraphSizeY() / 5);
-            var delta = milisecToTime(new Date(this.endTime - this.startTime).getTime());
-            this.Text(context, "ukończony w czasie: ", this.getGraphSizeX() / 2, 3 * this.getGraphSizeY() / 5);
-            this.Text(context, "" + delta.h + ":" + delta.m + ":" + delta.s, this.getGraphSizeX() / 2, 4 * this.getGraphSizeY() / 5);
-
+            this.draw_congratulation_background(context);
+            this.draw_congratulation_texts(context);
         }
-
     }
+
+    this.draw_background = function (context, grd) {
+        this.draw_filled_rect(context, grd, 0, 0, this.getGraphSizeX(), this.getGraphSizeY());
+    }
+
+    this.draw_room_background = function (context, d) {
+        this.draw_filled_rect(context, "white", d.x1, d.y1, d.x2, d.y2);
+    }
+
+    this.draw_room_outline = function (context, data) {
+        context.strokeStyle = "gray";
+        context.lineWidth = this.graphMultiply;
+
+        context.beginPath();
+        context.moveTo(data.x3, data.y1);
+        context.lineTo(data.x1, data.y1);
+        context.lineTo(data.x1, data.y3);
+
+        context.moveTo(data.x4, data.y1);
+        context.lineTo(data.x2, data.y1);
+        context.lineTo(data.x2, data.y3);
+
+        context.moveTo(data.x4, data.y2);
+        context.lineTo(data.x2, data.y2);
+        context.lineTo(data.x2, data.y4);
+
+        context.moveTo(data.x3, data.y2);
+        context.lineTo(data.x1, data.y2);
+        context.lineTo(data.x1, data.y4);
+        context.stroke();
+    }
+    this.draw_wall_free_bkg = function (context, data) {
+        this.draw_filled_rect(context, "white", data.x3, data.y3, data.x4, data.y4);
+    }
+    this.draw_wall_free_outline_horizontal = function (context, data) {
+        context.strokeStyle = "gray";
+        context.lineWidth = this.graphMultiply;
+        context.beginPath();
+        context.moveTo(data.x3, data.y3);
+        context.lineTo(data.x4, data.y3);
+        context.moveTo(data.x3, data.y4);
+        context.lineTo(data.x4, data.y4);
+        context.stroke();
+    }
+    this.draw_wall_solid_horizontal = function(context, data) {
+        context.strokeStyle = "gray";
+        context.lineWidth = this.graphMultiply;
+        context.beginPath();
+        context.moveTo(data.x1, data.y3);
+        context.lineTo(data.x1, data.y4);
+        context.moveTo(data.x2, data.y3);
+        context.lineTo(data.x2, data.y4);
+        context.stroke();
+    }
+    this.draw_wall_free_outline_vertical = function (context, data) {
+        context.strokeStyle = "gray";
+        context.lineWidth = this.graphMultiply;
+        context.beginPath();
+        context.moveTo(data.x3, data.y3);
+        context.lineTo(data.x3, data.y4);
+        context.moveTo(data.x4, data.y3);
+        context.lineTo(data.x4, data.y4);
+        context.stroke();
+    }
+    this.draw_wall_solid_vertical = function(context, data) {
+        context.strokeStyle = "gray";
+        context.lineWidth = this.graphMultiply;
+        context.beginPath();
+        context.moveTo(data.x3, data.y3);
+        context.lineTo(data.x4, data.y3);
+        context.moveTo(data.x3, data.y4);
+        context.lineTo(data.x4, data.y4);
+        context.stroke();
+    }
+    this.draw_blood = function (context, data) {
+        data.room.blood.forEach(function (exist, index) {
+            if(exist){
+                context.save();
+                context.translate((data.x1 + data.x2) / 2, (data.y1 + data.y2) / 2);
+                context.rotate(ROTATION[index]);
+                if (imgBlood.loaded)
+                    context.drawImage(imgBlood, -(data.x2 - data.x1) / 2, -(data.y2 - data.y1) / 2, data.x2 - data.x1, data.y2 - data.y1);
+                context.restore();
+            }
+        });
+    }
+    this.draw_hint = function (context, data, grd) {
+        var x0 = (data.x1 + data.x2) / 2;
+        var y0 = (data.y1 + data.y2) / 2;
+        var xr = (data.x2 - data.x1) / 4;
+        var yr = (data.y2 - data.y1) / 2;
+        context.save();
+        context.globalAlpha = 0.5;
+
+        grd = context.createRadialGradient(x0, y0, xr, x0, y0, yr);
+        grd.addColorStop(0, "rgba(255,255,0,1)");
+        grd.addColorStop(1, "rgba(255,255,0,0)");
+
+        this.draw_filled_rect(context, grd, data.x1, data.y1, data.x2, data.y2);
+
+        context.restore();
+    }
+    this.draw_dotee = function(context, data) {
+        context.save();
+        context.translate((data.x1 + data.x2) / 2, (data.y1 + data.y2) / 2);
+        context.rotate(ROTATION[this.dotee.look]);
+        if (imgDotee.loaded)
+            context.drawImage(imgDotee,
+                -(data.x2 - data.x1) / 2,
+                 -(data.y2 - data.y1) / 2,
+                  data.x2 - data.x1, data.y2 - data.y1
+            );
+        context.restore();
+    }
+    this.draw_congratulation_background = function (context) {
+        context.save();
+        context.globalAlpha = 0.5;
+        this.draw_filled_rect(context, "#c0c0c0", 0, 0, this.getGraphSizeX(), this.getGraphSizeY());
+        context.restore();
+    }
+
+    this.draw_congratulation_texts = function (context) {
+        context.textAlign = "center";
+        context.fillStyle = "#ff0000";
+        context.strokeStyle = "#800000";
+
+        context.font = "" + (30 * this.graphMultiply) + "pt Calibri";
+        this.Text(context, "Gratulacje!", this.getGraphSizeX() / 2, this.getGraphSizeY() / 5);
+
+        context.font = "" + (15 * this.graphMultiply) + "pt Calibri";
+        this.Text(context, "Labirynt " + this.countX + "x" + this.countY + " pól", this.getGraphSizeX() / 2, 2 * this.getGraphSizeY() / 5);
+        var delta = milisecToTime(new Date(this.endTime - this.startTime).getTime());
+        this.Text(context, "ukończony w czasie: ", this.getGraphSizeX() / 2, 3 * this.getGraphSizeY() / 5);
+        this.Text(context, "" + delta.h + ":" + delta.m + ":" + delta.s, this.getGraphSizeX() / 2, 4 * this.getGraphSizeY() / 5);
+    }
+    this.draw_filled_rect = function (context, fillStyle, x1, y1, x2, y2) {
+            context.beginPath();
+            context.moveTo(x1, y1);
+            context.lineTo(x2, y1);
+            context.lineTo(x2, y2);
+            context.lineTo(x1, y2);
+            context.closePath();
+            context.fillStyle = fillStyle;
+            context.fill();
+    }
+
     this.Text = function (context, text, x, y) {
         context.save();
         context.fillStyle = "white";
