@@ -52,23 +52,26 @@ function Room() {
 
 }
 function Wall() {
-    this.Type = 0;//brak ściany
+    this.Type = 0;//no wall
 
-    //this.GraphSizeY=15;
-
-    this.setType = function (t) {
-        this.Type = t;
-    };
-    this.getType = function () {
-        return this.Type;
-    };
+    this.setSolid = function () {
+        this.Type = 1;
+    }
+    this.setFree = function () {
+        this.Type = 0;
+    }
+    this.isSolid = function () {
+        return this.Type == 1;
+    }
+    this.isFree = function () {
+        return this.Type == 0;
+    }
 }
 function Maze(x, y, m) {
     this.countX = x;
     this.countY = y;
     this.graphMultiply = m;
 
-    //rozmiary komnat
     this.roomSizeX = 15;
     this.roomSizeY = 15;
 
@@ -167,13 +170,12 @@ function Maze(x, y, m) {
                     "y4" : y2 - ((this.roomSizeY - this.wallHeight) * this.graphMultiply / 2)
                 };
 
-                if (d.wall.getType() == 0) {
-                    this.draw_wall_free_bkg(context, d);
-
-                    this.draw_wall_free_outline_horizontal(context, d);
+                if (d.wall.isSolid()) {
+                    this.draw_wall_solid_horizontal(context, d);
                 }
                 else {
-                    this.draw_wall_solid_horizontal(context, d);
+                    this.draw_wall_free_bkg(context, d);
+                    this.draw_wall_free_outline_horizontal(context, d);
                 }
             }
         }
@@ -197,12 +199,12 @@ function Maze(x, y, m) {
                     "y4" : y2
                 };
 
-                if (d.wall.getType() == 0) {
-                    this.draw_wall_free_bkg(context, d);
-                    this.draw_wall_free_outline_vertical(context, d);
+                if (d.wall.isSolid()) {
+                    this.draw_wall_solid_vertical(context, d);
                 }
                 else {
-                    this.draw_wall_solid_vertical(context, d);
+                    this.draw_wall_free_bkg(context, d);
+                    this.draw_wall_free_outline_vertical(context, d);
                 }
             }
         }
@@ -443,16 +445,14 @@ function Maze(x, y, m) {
                 pd = new Point(rx + 1, ry);
                 break;
         }
-        if (sc.getType() == 0) {
-
-            //var po=this.get_room(rx,ry);
+        if (sc.isFree()) {
             var po = new Point(rx, ry);
-            sc.setType(1);
+            sc.setSolid();
             this.wallsCount++;
 
             this.marker++;
-            if ((this.find_path(po, pd, this.marker)) == false) {//po dodaniu tej sciany brak przejscia więc cofamy wybór
-                sc.setType(0);
+            if ((this.find_path(po, pd, this.marker)) == false) {//no path, revert changes
+                sc.setFree();
                 this.wallsCount--;
             }
         }
@@ -516,7 +516,7 @@ function Maze(x, y, m) {
 
         for (var i = 0; i < 4; i++) {
             if (this.adjacent(st.x, st.y, i) != null) {
-                if (this.wall(st.x, st.y, i).getType() == 0) {
+                if (this.wall(st.x, st.y, i).isFree()) {
                     if (this.find_path(this.point_of_adjacent(st.x, st.y, i), pd, zn) == true) {
                         this.get_room(st.x, st.y).path = 1;
                         return true;
@@ -532,7 +532,7 @@ function Maze(x, y, m) {
     //obsługa kropka
     this.move_dotee_up = function () {
         if (!this.winner) {
-            if (this.get_wall[DIR.UP](this.dotee.x, this.dotee.y).getType() == 0) {
+            if (this.get_wall[DIR.UP](this.dotee.x, this.dotee.y).isFree()) {
                 this.hint = false;
                 this.get_room(this.dotee.x, this.dotee.y).blood[DIR.UP] = true;
                 this.dotee.y -= 1;
@@ -543,7 +543,7 @@ function Maze(x, y, m) {
     }
     this.move_dotee_down = function () {
         if (!this.winner) {
-            if (this.get_wall[DIR.DOWN](this.dotee.x, this.dotee.y).getType() == 0) {
+            if (this.get_wall[DIR.DOWN](this.dotee.x, this.dotee.y).isFree()) {
                 this.hint = false;
                 this.get_room(this.dotee.x, this.dotee.y).blood[DIR.DOWN] = true;
                 this.dotee.y += 1;
@@ -554,7 +554,7 @@ function Maze(x, y, m) {
     }
     this.move_dotee_left = function () {
         if (!this.winner) {
-            if (this.get_wall[DIR.LEFT](this.dotee.x, this.dotee.y).getType() == 0) {
+            if (this.get_wall[DIR.LEFT](this.dotee.x, this.dotee.y).isFree()) {
                 this.hint = false;
                 this.get_room(this.dotee.x, this.dotee.y).blood[DIR.LEFT] = true;
                 this.dotee.x -= 1;
@@ -565,7 +565,7 @@ function Maze(x, y, m) {
     }
     this.move_dotee_right = function () {
         if (!this.winner) {
-            if (this.get_wall[DIR.RIGHT](this.dotee.x, this.dotee.y).getType() == 0) {
+            if (this.get_wall[DIR.RIGHT](this.dotee.x, this.dotee.y).isFree()) {
                 this.hint = false;
                 this.get_room(this.dotee.x, this.dotee.y).blood[DIR.RIGHT] = true;
                 this.dotee.x += 1;
@@ -603,7 +603,7 @@ function Maze(x, y, m) {
                 for (var i = 0; i < 4; i++) {
                     if (this.adjacent(this.dotee.x, this.dotee.y, i) !== null &&
                         this.adjacent(this.dotee.x, this.dotee.y, i).path == 1 &&
-                        this.wall(this.dotee.x, this.dotee.y, i).getType() == 0
+                        this.wall(this.dotee.x, this.dotee.y, i).isFree()
                     ) {
                         p = this.point_of_adjacent(this.dotee.x, this.dotee.y, i);
                         break;
@@ -639,14 +639,14 @@ function Maze(x, y, m) {
         this.walls.x[i] = [];
         for (var j = 0; j < this.countY; j++) {
             this.walls.x[i][j] = new Wall();
-            if (i == 0 || i == this.countX) this.walls.x[i][j].setType(1);
+            if (i == 0 || i == this.countX) this.walls.x[i][j].setSolid();
         }
     }
     for (var i = 0; i < this.countX; i++) {
         this.walls.y[i] = [];
         for (var j = 0; j < this.countY + 1; j++) {
             this.walls.y[i][j] = new Wall();
-            if (j == 0 || j == this.countY) this.walls.y[i][j].setType(1);
+            if (j == 0 || j == this.countY) this.walls.y[i][j].setSolid();
 
         }
     }
