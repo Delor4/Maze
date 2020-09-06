@@ -2,7 +2,7 @@
  * Created by Delor on 2015-02-28.
  */
 
-//stałe
+//constants
 const DIR = {
   UP: 0,
   RIGHT: 1,
@@ -17,7 +17,7 @@ const ROTATION = [
     -Math.PI / 2
 ];
 
-//używane zmienne
+//variables
 var canvas, context;
 
 var lab;
@@ -38,7 +38,7 @@ imgDotee.onload = function () {
     this.loaded = true;
     Repaint();
 };
-function distance(x1, y1, x2, y2) {//odległość między punktami (2d)
+function distance(x1, y1, x2, y2) {//Euclidean distance between two points
     return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
@@ -99,8 +99,8 @@ function Maze(x, y, m) {
         return this.graphMultiply;
     };
     this.Repaint = function (context) {
-        var grd = context.createRadialGradient(0, 0, distance(0, 0, this.getGraphSizeX(), this.getGraphSizeY()) / 10, 0,
-                                               0, distance(0, 0, this.getGraphSizeX(), this.getGraphSizeY()));
+        var grd = context.createRadialGradient(0, 0, distance(0, 0, this.getGraphSizeX(), this.getGraphSizeY()) / 10,
+                                               0, 0, distance(0, 0, this.getGraphSizeX(), this.getGraphSizeY()));
         grd.addColorStop(0, "#c0c0c0");
         grd.addColorStop(1, "#000000");
 
@@ -377,7 +377,7 @@ function Maze(x, y, m) {
         return ((this.roomSizeY * this.countY) + (this.wallWidth * (this.countY + 1))) * this.getGraphMultiply();
     };
 
-    this.place_walls = function () {//losowanie rozstawienia ścian
+    this.place_walls = function () {//randomize walls placement
         const max_walls = (this.countX * this.countY) - (this.countX + this.countY) + 1;
 
         while (this.wallsCount < max_walls) {
@@ -426,7 +426,6 @@ function Maze(x, y, m) {
     }
     this.get_wall[DIR.RIGHT] = this.get_wall_right.bind(this);
 
-    //sprawdzam czy mogę wstawić scianę f w komnacie (x,y)
     this.checkInsert = function (rx, ry, f) {
         var sc, pd;
         sc = (this.get_wall[f])(rx, ry);
@@ -529,7 +528,7 @@ function Maze(x, y, m) {
 
     }
 
-    //obsługa kropka
+    //main character moving
     this.move_dotee_up = function () {
         if (!this.winner) {
             if (this.get_wall[DIR.UP](this.dotee.x, this.dotee.y).isFree()) {
@@ -623,7 +622,7 @@ function Maze(x, y, m) {
         }
 
     }
-    //tworzenie labiryntu
+    //making maze
     this.rooms = [];
     for (var i = 0; i < this.countX; i++) {
         this.rooms[i] = [];
@@ -691,7 +690,7 @@ function ShowTime() {
     var delta = milisecToTime(new Date(t - lab.startTime).getTime());
     document.getElementById("showtime").textContent = delta.h + ":" + delta.m + ":" + delta.s;
 }
-//inicjowanie wszystkiego
+//initiating
 window.onload = function () {
     canvas = document.getElementById("drawingCanvas");
     context = canvas.getContext("2d");
@@ -700,19 +699,19 @@ window.onload = function () {
         var changed = false;
         var moved = -1;
         switch (e.keyCode) {
-            case 38://up
+            case 38:
                 moved = DIR.UP;
                 break;
-            case 37://left
+            case 37:
                 moved = DIR.LEFT;
                 break;
-            case 39://right
+            case 39:
                 moved = DIR.RIGHT;
                 break;
-            case 40://down
+            case 40:
                 moved = DIR.DOWN;
                 break;
-            case 32://space
+            case 32: //space
                 lab.Hint();
                 changed = true;
                 break;
