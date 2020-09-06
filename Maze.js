@@ -1,5 +1,6 @@
 /**
  * Created by Delor on 2015-02-28.
+ * Updated on 2020.
  */
 
 //constants
@@ -16,6 +17,15 @@ const ROTATION = [
     Math.PI,
     -Math.PI / 2
 ];
+
+const INIT = {
+    HINT_COUNT : 5,
+    ROOM_SIZE_X : 15,
+    ROOM_SIZE_Y : 15,
+
+    WALL_WIDTH : 5,
+    WALL_HEIGHT: 10
+}
 
 //variables
 var canvas, context;
@@ -67,16 +77,16 @@ function Wall() {
         return this.Type == 0;
     }
 }
-function Maze(x, y, m) {
+function Maze(x, y, multiply) {
     this.countX = x;
     this.countY = y;
-    this.graphMultiply = m;
+    this.graphMultiply = multiply;
 
-    this.roomSizeX = 15;
-    this.roomSizeY = 15;
+    this.roomSizeX = INIT.ROOM_SIZE_X;
+    this.roomSizeY = INIT.ROOM_SIZE_Y;
 
-    this.wallWidth = 5;
-    this.wallHeight = 10;
+    this.wallWidth = INIT.WALL_WIDTH;
+    this.wallHeight = INIT.WALL_HEIGHT;
 
     this.wallsCount = 0;
     this.marker = 0;
@@ -87,7 +97,7 @@ function Maze(x, y, m) {
         look: DIR.UP
     };
 
-    this.hintCount = 5;
+    this.hintCount = INIT.HINT_COUNT;
 
     this.getHintCount = function () {
         return this.hintCount;
@@ -514,13 +524,13 @@ function Maze(x, y, m) {
         this.get_room(st.x, st.y).flag = zn;
 
         for (var i = 0; i < 4; i++) {
-            if (this.adjacent(st.x, st.y, i) != null) {
-                if (this.wall(st.x, st.y, i).isFree()) {
-                    if (this.find_path(this.point_of_adjacent(st.x, st.y, i), pd, zn) == true) {
-                        this.get_room(st.x, st.y).path = 1;
-                        return true;
-                    }
-                }
+            if (
+                (this.adjacent(st.x, st.y, i) != null) &&
+                this.wall(st.x, st.y, i).isFree() &&
+                this.find_path(this.point_of_adjacent(st.x, st.y, i), pd, zn)
+            ) {
+                this.get_room(st.x, st.y).path = 1;
+                return true;
             }
         }
         this.get_room(st.x, st.y).path = 0;
