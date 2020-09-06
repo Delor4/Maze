@@ -127,14 +127,14 @@ function Maze(x, y, m) {
                 context.fillStyle = "white";
                 context.fill();
 
-                if (r.blood[0]) {//góra
+                if (r.blood[DIR.UP]) {
                     context.save();
                     context.translate((x1 + x2) / 2, (y1 + y2) / 2);
                     if (imgBlood.loaded)
                         context.drawImage(imgBlood, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
                     context.restore();
                 }
-                if (r.blood[1]) {//prawo
+                if (r.blood[DIR.RIGHT]) {
                     context.save();
                     context.translate((x1 + x2) / 2, (y1 + y2) / 2);
                     context.rotate(Math.PI / 2);
@@ -143,7 +143,7 @@ function Maze(x, y, m) {
                     context.restore();
 
                 }
-                if (r.blood[2]) {//dół
+                if (r.blood[DIR.DOWN]) {
                     context.save();
                     context.translate((x1 + x2) / 2, (y1 + y2) / 2);
                     context.rotate(Math.PI);
@@ -152,7 +152,7 @@ function Maze(x, y, m) {
                     context.restore();
 
                 }
-                if (r.blood[3]) {//lewo
+                if (r.blood[DIR.LEFT]) {
                     context.save();
                     context.translate((x1 + x2) / 2, (y1 + y2) / 2);
                     context.rotate(-Math.PI / 2);
@@ -411,44 +411,47 @@ function Maze(x, y, m) {
         if (x < 0 || x >= this.countX || y < 0 || y >= this.countY) return null;
         return this.rooms[x][y];
     }
+    this.get_wall = [];
     this.get_wall_up = function (x, y) {
         if (x < 0 || x >= this.countX || y < 0 || y > this.countY) return null;
         return this.walls.y[x][y];
     }
+    this.get_wall[DIR.UP] = this.get_wall_up.bind(this);
+
     this.get_wall_down = function (x, y) {
         if (x < 0 || x >= this.countX || y < 0 || y > this.countY) return null;
         return this.walls.y[x][y + 1];
     }
+    this.get_wall[DIR.DOWN] = this.get_wall_down.bind(this);
+
     this.get_wall_left = function (x, y) {
         if (x < 0 || x > this.countX || y < 0 || y >= this.countY) return null;
         return this.walls.x[x][y];
     }
+    this.get_wall[DIR.LEFT] = this.get_wall_left.bind(this);
+
     this.get_wall_right = function (x, y) {
         if (x < 0 || x > this.countX || y < 0 || y >= this.countY) return null;
         return this.walls.x[x + 1][y];
     }
+    this.get_wall[DIR.RIGHT] = this.get_wall_right.bind(this);
+
     //sprawdzam czy mogę wstawić scianę f w komnacie (x,y)
     this.checkInsert = function (rx, ry, f) {
         var sc, pd;
+        sc = (this.get_wall[f])(rx, ry);
         switch (f) {
-            case 0:
-                sc = this.get_wall_up(rx, ry);
-                //pd=this.get_room(rx,ry-1);
+            case DIR.UP:
                 pd = new Point(rx, ry - 1);
                 break;
-            case 3:
-                sc = this.get_wall_left(rx, ry);
-                //pd=this.get_room(rx-1,ry);
+            case DIR.LEFT:
                 pd = new Point(rx - 1, ry);
                 break;
-            case 2:
-                sc = this.get_wall_down(rx, ry);
-                //pd=this.get_room(rx,ry+1);
+            case DIR.DOWN:
                 pd = new Point(rx, ry + 1);
                 break;
+            case DIR.RIGHT:
             default:
-                sc = this.get_wall_right(rx, ry);
-                //pd=this.get_room(rx+1,ry);
                 pd = new Point(rx + 1, ry);
                 break;
         }
@@ -468,48 +471,36 @@ function Maze(x, y, m) {
     }
     this.adjacent = function (rx, ry, k) {
         switch (k) {
-            case 0:
+            case DIR.UP:
                 return this.get_room(rx, ry - 1);
                 break;
-            case 3:
+            case DIR.LEFT:
                 return this.get_room(rx - 1, ry);
-
                 break;
-            case 2:
+            case DIR.DOWN:
                 return this.get_room(rx, ry + 1);
                 break;
+            case DIR.RIGHT:
             default:
                 return this.get_room(rx + 1, ry);
                 break;
         }
     }
     this.wall = function (rx, ry, k) {
-        switch (k) {
-            case 0:
-                return this.get_wall_up(rx, ry);
-                break;
-            case 3:
-                return this.get_wall_left(rx, ry);
-                break;
-            case 2:
-                return this.get_wall_down(rx, ry);
-                break;
-            default:
-                return this.get_wall_right(rx, ry);
-                break;
-        }
+        return this.get_wall[k](rx, ry);
     }
-    this.rightAdjacent = function (rx, ry, k) {
+    this.point_of_adjacent = function (rx, ry, k) {
         switch (k) {
-            case 0:
+            case DIR.UP:
                 return new Point(rx, ry - 1);
                 break;
-            case 3:
+            case DIR.LEFT:
                 return new Point(rx - 1, ry);
                 break;
-            case 2:
+            case DIR.DOWN:
                 return new Point(rx, ry + 1);
                 break;
+            case DIR.RIGHT:
             default:
                 return new Point(rx + 1, ry);
                 break;
@@ -538,7 +529,7 @@ function Maze(x, y, m) {
         for (var i = 0; i < 4; i++) {
             if (this.adjacent(st.x, st.y, i) != null) {
                 if (this.wall(st.x, st.y, i).getType() == 0) {
-                    if (this.find_path(this.rightAdjacent(st.x, st.y, i), pd, zn) == true) {
+                    if (this.find_path(this.point_of_adjacent(st.x, st.y, i), pd, zn) == true) {
                         this.get_room(st.x, st.y).path = 1;
                         return true;
                     }
@@ -551,9 +542,9 @@ function Maze(x, y, m) {
     }
 
     //obsługa kropka
-    this.moveDoteeUp = function () {
+    this.move_dotee_up = function () {
         if (!this.winner) {
-            if (this.get_wall_up(this.dotee.x, this.dotee.y).getType() == 0) {
+            if (this.get_wall[DIR.UP](this.dotee.x, this.dotee.y).getType() == 0) {
                 this.hint = false;
                 this.get_room(this.dotee.x, this.dotee.y).blood[DIR.UP] = true;
                 this.dotee.y -= 1;
@@ -562,9 +553,9 @@ function Maze(x, y, m) {
             }
         }
     }
-    this.moveDoteeDown = function () {
+    this.move_dotee_down = function () {
         if (!this.winner) {
-            if (this.get_wall_down(this.dotee.x, this.dotee.y).getType() == 0) {
+            if (this.get_wall[DIR.DOWN](this.dotee.x, this.dotee.y).getType() == 0) {
                 this.hint = false;
                 this.get_room(this.dotee.x, this.dotee.y).blood[DIR.DOWN] = true;
                 this.dotee.y += 1;
@@ -573,9 +564,9 @@ function Maze(x, y, m) {
             }
         }
     }
-    this.moveDoteeLeft = function () {
+    this.move_dotee_left = function () {
         if (!this.winner) {
-            if (this.get_wall_left(this.dotee.x, this.dotee.y).getType() == 0) {
+            if (this.get_wall[DIR.LEFT](this.dotee.x, this.dotee.y).getType() == 0) {
                 this.hint = false;
                 this.get_room(this.dotee.x, this.dotee.y).blood[DIR.LEFT] = true;
                 this.dotee.x -= 1;
@@ -584,9 +575,9 @@ function Maze(x, y, m) {
             }
         }
     }
-    this.moveDoteeRight = function () {
+    this.move_dotee_right = function () {
         if (!this.winner) {
-            if (this.get_wall_right(this.dotee.x, this.dotee.y).getType() == 0) {
+            if (this.get_wall[DIR.RIGHT](this.dotee.x, this.dotee.y).getType() == 0) {
                 this.hint = false;
                 this.get_room(this.dotee.x, this.dotee.y).blood[DIR.RIGHT] = true;
                 this.dotee.x += 1;
@@ -595,6 +586,12 @@ function Maze(x, y, m) {
             }
         }
     }
+    this.move_dotee = [];
+    this.move_dotee[DIR.UP] = this.move_dotee_up.bind(this);
+    this.move_dotee[DIR.RIGHT] = this.move_dotee_right.bind(this);
+    this.move_dotee[DIR.DOWN] = this.move_dotee_down.bind(this);
+    this.move_dotee[DIR.LEFT] = this.move_dotee_left.bind(this);
+
     this.winner = false;
     //this.postwinner=false;
     this.endTime = null;
@@ -620,8 +617,7 @@ function Maze(x, y, m) {
                         this.adjacent(this.dotee.x, this.dotee.y, i).path == 1 &&
                         this.wall(this.dotee.x, this.dotee.y, i).getType() == 0
                     ) {
-                        //this.adjacent(this.dotee.x,this.dotee.y,i).path=2;
-                        p = this.rightAdjacent(this.dotee.x, this.dotee.y, i);
+                        p = this.point_of_adjacent(this.dotee.x, this.dotee.y, i);
                         break;
                     }
                 }
@@ -672,14 +668,12 @@ function Maze(x, y, m) {
 
 function NewLab() {
     lab = new Maze(newX, newY, GraphMaze.Multiply);
-    //lab.find_path({x:0,y:0},{x:0,y:1},900);
     Repaint();
 }
 function Point(x, y) {
     this.x = x;
     this.y = y;
 }
-var isFirefox = typeof InstallTrigger !== 'undefined';
 function Repaint() {
     document.getElementById("sizeout").textContent = newX + "x" + newY + " pól";
 
@@ -690,12 +684,8 @@ function Repaint() {
 
     lab.Repaint(context);
     ShowTime();
-
-
-    if (isFirefox) {
-        //        document.getElementById("uwaga").textContent="Zalecam użycie przeglądarki Google Chrome lub Internet Explorer v. 9+";
-    }
 }
+
 function milisecToTime(mi) {
     var h = Math.floor(mi / (1000 * 60 * 60));
     var m = Math.floor((mi - (h * 1000 * 60 * 60)) / (1000 * 60));
@@ -719,32 +709,33 @@ window.onload = function () {
     context = canvas.getContext("2d");
 
     window.onkeydown = function (e) {
+        var changed = false;
+        var moved = -1;
         switch (e.keyCode) {
             case 38://up
-                lab.moveDoteeUp();
-                Repaint();
-                e.preventDefault();
+                moved = DIR.UP;
                 break;
             case 37://left
-                lab.moveDoteeLeft();
-                Repaint();
-                e.preventDefault();
+                moved = DIR.LEFT;
                 break;
             case 39://right
-                lab.moveDoteeRight();
-                Repaint();
-                e.preventDefault();
+                moved = DIR.RIGHT;
                 break;
             case 40://down
-                lab.moveDoteeDown();
-                Repaint();
-                e.preventDefault();
+                moved = DIR.DOWN;
                 break;
             case 32://space
                 lab.Hint();
-                Repaint();
-                e.preventDefault();
+                changed = true;
                 break;
+        }
+        if(moved != -1) {
+            lab.move_dotee[moved]();
+            changed = true;
+        }
+        if(changed) {
+            Repaint();
+            e.preventDefault();
         }
 
     }
@@ -763,7 +754,7 @@ window.onload = function () {
     };
 
     NewLab();
-    //lab.find_path({x:0,y:0},{x:lab.countX-1,y:lab.countY-1},900);
+
     imgBlood.src = 'krew.png';
     imgDotee.src = 'kropek.png';
     Repaint();
