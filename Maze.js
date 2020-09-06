@@ -10,6 +10,13 @@ const DIR = {
   LEFT: 3
 }
 
+const ROTATION = [
+    0,
+    Math.PI / 2,
+    Math.PI,
+    -Math.PI / 2
+];
+
 //używane zmienne
 var canvas, context;
 
@@ -127,40 +134,17 @@ function Maze(x, y, m) {
                 context.fillStyle = "white";
                 context.fill();
 
-                if (r.blood[DIR.UP]) {
-                    context.save();
-                    context.translate((x1 + x2) / 2, (y1 + y2) / 2);
-                    if (imgBlood.loaded)
-                        context.drawImage(imgBlood, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
-                    context.restore();
-                }
-                if (r.blood[DIR.RIGHT]) {
-                    context.save();
-                    context.translate((x1 + x2) / 2, (y1 + y2) / 2);
-                    context.rotate(Math.PI / 2);
-                    if (imgBlood.loaded)
-                        context.drawImage(imgBlood, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
-                    context.restore();
-
-                }
-                if (r.blood[DIR.DOWN]) {
-                    context.save();
-                    context.translate((x1 + x2) / 2, (y1 + y2) / 2);
-                    context.rotate(Math.PI);
-                    if (imgBlood.loaded)
-                        context.drawImage(imgBlood, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
-                    context.restore();
-
-                }
-                if (r.blood[DIR.LEFT]) {
-                    context.save();
-                    context.translate((x1 + x2) / 2, (y1 + y2) / 2);
-                    context.rotate(-Math.PI / 2);
-                    if (imgBlood.loaded)
-                        context.drawImage(imgBlood, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
-                    context.restore();
-
-                }
+                //bloody path :)
+                r.blood.forEach(function (exist, index) {
+                    if(exist){
+                        context.save();
+                        context.translate((x1 + x2) / 2, (y1 + y2) / 2);
+                        context.rotate(ROTATION[index]);
+                        if (imgBlood.loaded)
+                            context.drawImage(imgBlood, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
+                        context.restore();
+                    }
+                });
 
                 //cała ścieżka po wygraniu
                 if (
@@ -211,41 +195,12 @@ function Maze(x, y, m) {
                 context.stroke();
 
                 if (i == this.dotee.x && j == this.dotee.y) {
-
-                    if (this.dotee.look == DIR.UP) {
-                        context.save();
-                        context.translate((x1 + x2) / 2, (y1 + y2) / 2);
-                        if (imgDotee.loaded)
-                            context.drawImage(imgDotee, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
-                        context.restore();
-                    }
-                    if (this.dotee.look == DIR.RIGHT) {
-                        context.save();
-                        context.translate((x1 + x2) / 2, (y1 + y2) / 2);
-                        context.rotate(Math.PI / 2);
-                        if (imgDotee.loaded)
-                            context.drawImage(imgDotee, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
-                        context.restore();
-
-                    }
-                    if (this.dotee.look == DIR.DOWN) {
-                        context.save();
-                        context.translate((x1 + x2) / 2, (y1 + y2) / 2);
-                        context.rotate(Math.PI);
-                        if (imgDotee.loaded)
-                            context.drawImage(imgDotee, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
-                        context.restore();
-
-                    }
-                    if (this.dotee.look == DIR.LEFT) {
-                        context.save();
-                        context.translate((x1 + x2) / 2, (y1 + y2) / 2);
-                        context.rotate(-Math.PI / 2);
-                        if (imgDotee.loaded)
-                            context.drawImage(imgDotee, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
-                        context.restore();
-
-                    }
+                    context.save();
+                    context.translate((x1 + x2) / 2, (y1 + y2) / 2);
+                    context.rotate(ROTATION[this.dotee.look]);
+                    if (imgDotee.loaded)
+                        context.drawImage(imgDotee, -(x2 - x1) / 2, -(y2 - y1) / 2, x2 - x1, y2 - y1);
+                    context.restore();
                 }
             }
         }
